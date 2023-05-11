@@ -24,7 +24,7 @@ class ViewController: UIViewController {
         notificationTableView.delegate = self
         notificationTableView.dataSource = self
         
-        notificationTableView.register(notificationTableViewCell.self, forCellReuseIdentifier: "notificationTableViewCell")
+        notificationTableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: "notificationTableViewCell")
     }
 
 
@@ -32,7 +32,10 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "notificationTableViewCell", for: indexPath) as! notificationTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "notificationTableViewCell", for: indexPath) as! NotificationTableViewCell
+//        cell找ViewController當delegate幫忙
+        cell.delegate = self
+//        畫cell的資料
         cell.set(account: accounts[indexPath.row])
         return cell
     }
@@ -53,7 +56,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
         let account = accounts[indexPath.row]
-        print("選擇的是 \(account)")
+        print("選擇的是 \(account.name)")
 //        let detailController = AnimalDetailViewController()
 //        detailController.fact.text = animal.facts
 //        self.present(detailController, animated: true)
@@ -61,7 +64,23 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-let accounts: [Account] = [
+extension ViewController: NotificationTableViewCellDelegate {    
+    func didTabFollowButton(account: Account) {
+//        按下按鈕後找到按的是第幾筆Account
+        guard let index = accounts.firstIndex(of: account) else { return }
+//        改變Account的追蹤狀態
+        switch accounts[index].followStatus {
+        case .unfollow:
+            accounts[index].followStatus = .following
+        case .following:
+            accounts[index].followStatus = .unfollow
+        }
+//        通知tableView重畫
+        notificationTableView.reloadData()
+    }
+}
+
+var accounts: [Account] = [
     Account(avatar: UIImage(named: "Upstream"), name: "account0"),
     Account(avatar: UIImage(named: "Upstream-1"), name: "account1"),
     Account(avatar: UIImage(named: "Upstream-2"), name: "account2"),
